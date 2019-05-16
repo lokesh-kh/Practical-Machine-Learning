@@ -1,0 +1,141 @@
+---
+title: "Practical Machine Learning Project"
+author: "Lokesh Khattar"
+date: "May 13, 2019"
+output: html_document
+---
+
+##### Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible tocollect a large amount of data about personal activity relatively inexpensively.  These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, our goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. 
+
+```{r}
+library(caret)
+library(rattle)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+library(randomForest)
+library(corrplot)
+library(gbm)
+```
+
+##### Loading the required data
+
+```{r}
+# train data
+train_data = read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"),header = T)
+# summary(train_data)
+
+# test data
+test_data = read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"),header = T)
+# summary(test_data)
+```
+
+```{r}
+# checking rows,columns 
+dim(train_data)
+dim(test_data)
+```
+
+```{r}
+# checking for the missing values
+colSums(is.na(train_data))
+colSums(is.na(test_data))
+```
+
+```{r}
+# removing all the columns with missing values, and irrelavant columns  
+train_data  = train_data[,colSums(is.na(train_data))==0]
+test_data   = test_data[,colSums(is.na(test_data))==0]
+train_data  = train_data[,8:ncol(train_data)]
+test_data   = test_data[,8:ncol(test_data)]
+
+dim(train_data)
+dim(test_data)
+```
+
+```{r}
+#  further cleaning and creating a partition of the training data set 
+set.seed(12345)
+partition = createDataPartition(train_data$classe,p= 0.75,list = FALSE)
+
+train_data_1 = train_data[partition,]
+test_data_1 = train_data[-partition,]
+
+variance_check = nearZeroVar(train_data_1)
+train_data_1 = train_data_1[,-variance_check]
+test_data_1 = test_data_1[,-variance_check]
+
+dim(train_data_1)
+dim(test_data_1)
+```
+
+##### Model Building - Classification/Decision Tree
+
+```{r}
+set.seed(12345)
+model_1 = rpart(classe ~.,data=train_data_1, method = "class")
+fancyRpartPlot(model_1)
+```
+
+```{r}
+# using the model to make predictions
+model_1_predict = predict(model_1, test_data_1, type = "class")
+c_matrix_1 = confusionMatrix(model_1_predict, test_data_1$classe)
+c_matrix_1
+```
+
+
+##### Model Building - Random Forest
+
+```{r}
+model_2 = train(classe~.,data=train_data_1, method="rf",trControl=trainControl(method="cv", number=3, verboseIter=FALSE))
+model_2$finalModel
+```
+
+```{r}
+# using the model to make predictions
+model_2_predict = predict(model_2,newdata=test_data_1)
+c_matrix_2 = confusionMatrix(model_2_predict,test_data_1$classe)
+c_matrix_2
+```
+
+
+```{r}
+# plotting the model to check for overfitting
+plot(model_2)
+```
+
+##### Model Building - Generalized Boosted Regression Models
+```{r}
+set.seed(12345)
+control = trainControl(method = "repeatedcv", number = 5, repeats = 1)
+model_3 = train(classe ~ ., data = train_data_1, method = "gbm", trControl = control, verbose = FALSE)
+model_3$finalModel
+print(model_3)
+```
+
+  
+```{r}
+# using the model to make predictions
+model_3_predict = predict(model_3,newdata=test_data_1)
+c_matrix_3 <- confusionMatrix(model_3_predict, test_data_1$classe)
+c_matrix_3
+```
+
+##### Comparing the three models on accuracy levels
+
+```{r}
+c_matrix_1$overall["Accuracy"] 
+c_matrix_2$overall["Accuracy"]
+c_matrix_3$overall["Accuracy"]
+```
+
+##### After comparison it can be concluded that,out of the three models, random forest is the producing the most accurate results. 
+
+##### Applying the best model to make final predictions
+
+```{r}
+final_prediction = predict(model_2, newdata = test_data)
+final_prediction
+````
+

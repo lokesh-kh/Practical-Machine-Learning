@@ -1,6 +1,6 @@
-# Practical-Machine-Learning
+# Practical_Machine_Learning
 
-
+### Commit 1
 The goal of this project is to predict the manner in which they did the exercise.
 This is the "classe" variable in the training set. 
 
@@ -28,3 +28,4 @@ The data for this project come from this source: http://web.archive.org/web/2016
 If you use the document you create for this class for any purpose please cite them as they have been very generous in allowing their 
 data to be used for this kind of assignment.
 
+### Commit 2 : A to Z of Machine Learning, Become a Kaggle Master (Udemy MOOC)

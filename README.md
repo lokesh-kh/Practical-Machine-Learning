@@ -1,6 +1,6 @@
 # Practical_Machine_Learning
 
-### Commit 1
+### Commit 1 : ML Project in R
 The goal of this project is to predict the manner in which they did the exercise.
 This is the "classe" variable in the training set. 
 
